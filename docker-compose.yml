@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  eth_spike_real_time:
+    build: 
+      context: ./docker
+      dockerfile: Dockerfile
+    ports:
+      - '5001:5001'
+    volumes:
+      - ./app:/home/jovyan/app
+    command: tail -F anything

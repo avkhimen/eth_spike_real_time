@@ -1,0 +1,10 @@
+# Large models and data files
+*.pt
+*.pth
+*.h5
+
+# Files in these dirs
+venv/
+
+# Random files
+*.mp4
