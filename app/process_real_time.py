@@ -6,7 +6,7 @@ url = 'https://futures.kraken.com/api/charts/v1/spot/PI_XBTUSD/4h?from=162903802
 
 r_js = requests.get(url).json()
 
-print(r_js)
+print(r_js.keys())
 
 # ts = int('1284101485')
 
