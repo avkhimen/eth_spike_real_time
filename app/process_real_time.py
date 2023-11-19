@@ -6,16 +6,19 @@ from twilio.rest import Client
 import time
 import pickle
 import numpy as np
+import logging
+
+logging.getLogger().setLevel(logging.INFO)
 
 while True:
 
     time.sleep(20)
 
     current_time = datetime.now()
-    print(f'Processed {current_time}')
-    if (current_time.hour in [0,4,8,12,16,20]) and (current_time.minute == 10):
+    logging.info(f'Processed {current_time}')
+    if (current_time.hour in [0,4,8,12,16,18,20]) and (current_time.minute == 42):
 
-        print('Checking prices...')
+        logging.info('Checking prices...')
 
         end = int(time.mktime(datetime.now().timetuple()))
 
@@ -52,9 +55,9 @@ while True:
 
         pred = model.predict([input_features])[0]
 
-        print(pred)
+        print('Prediction is', pred)
 
-        if pred == 'True':
+        if pred == 'False':
 
             account_sid = os.environ['ACCOUNT_SID']
             auth_token = os.environ['AUTH_TOKEN']
