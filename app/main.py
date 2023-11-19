@@ -21,6 +21,8 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
 
+import pickle
+
 warnings.simplefilter('ignore')
 
 offsets = [50,60,70,80,90,100]
@@ -135,6 +137,9 @@ for offset in offsets:
         for name, clf in zip(names, classifiers):
 
             clf.fit(X_train, y_train)
+
+            with open('model.pickle', 'wb') as f:
+                pickle.dump(clf, f)
 
             yhat = clf.predict(X_test)
 
