@@ -5,42 +5,67 @@ import os
 from twilio.rest import Client
 import time
 import pickle
+import numpy as np
 
-end = int(time.mktime(datetime.now().timetuple()))
+while True:
 
-start = end - 1000 * 4 * 60 * 60
+    time.sleep(20)
 
-# url = 'https://futures.kraken.com/api/charts/v1/spot/PI_XBTUSD/4h?from=1262332861&to=1700294134'
+    current_time = datetime.now()
+    print(f'Processed {current_time}')
+    if (current_time.hour in [0,4,8,12,16,20]) and (current_time.minute == 10):
 
-url = f'https://futures.kraken.com/api/charts/v1/spot/PI_XBTUSD/4h?from={start}&to={end}'
+        print('Checking prices...')
 
-candles = requests.get(url).json()['candles']
+        end = int(time.mktime(datetime.now().timetuple()))
 
-close_prices = []
-timestamps = []
-for item in candles:
-    timestamps.append(item['time'])
-    close_prices.append(item['close'])
+        start = end - 1000 * 4 * 60 * 60
 
-with open('model.pickle', 'rb') as f:
-    model = pickle.load(f)
+        ethusd_url = f'https://futures.kraken.com/api/charts/v1/spot/PI_ETHUSD/4h?from={start}&to={end}'
 
-pred = model.predict(close_prices[-90:])
+        ethusd_candles = requests.get(ethusd_url).json()['candles']
 
-print(pred)
+        ethusd_close_prices = []
+        timestamps = []
+        for item in ethusd_candles:
+            timestamps.append(item['time'])
+            ethusd_close_prices.append(float(item['close']))
 
-# account_sid = os.environ['ACCOUNT_SID']
-# auth_token = os.environ['AUTH_TOKEN']
-# client = Client(account_sid, auth_token)
+        btcusd_url = f'https://futures.kraken.com/api/charts/v1/spot/PI_XBTUSD/4h?from={start}&to={end}'
 
-# message = client.messages.create(
-#     from_=os.environ['TWILIO_PHONE_NUMBER'],
-#     body='Hello there',
-#     to='+17809321716'
-# )
+        btcusd_candles = requests.get(btcusd_url).json()['candles']
 
-# print(message.sid)
+        btcusd_close_prices = []
+        timestamps = []
+        for item in btcusd_candles:
+            timestamps.append(item['time'])
+            btcusd_close_prices.append(float(item['close']))
 
-# ts = int('1284101485')
+        close_prices = np.divide(np.array(ethusd_close_prices), np.array(btcusd_close_prices)).tolist()
 
-# print(datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
+        with open('model.pickle', 'rb') as f:
+            model = pickle.load(f)
+
+        close_prices = np.array(close_prices)
+
+        input_features = np.concatenate((close_prices[-90:], close_prices[-90:]/min(close_prices[-90:]), [min(close_prices[-90:])]), axis=0)
+
+        pred = model.predict([input_features])[0]
+
+        print(pred)
+
+        if pred == 'True':
+
+            account_sid = os.environ['ACCOUNT_SID']
+            auth_token = os.environ['AUTH_TOKEN']
+            client = Client(account_sid, auth_token)
+
+            message = client.messages.create(
+                from_=os.environ['TWILIO_PHONE_NUMBER'],
+                body='Eth should spike against BTC',
+                to='+17809321716'
+            )
+
+            # ts = int('1284101485')
+
+            # print(datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))

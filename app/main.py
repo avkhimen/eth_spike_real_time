@@ -64,7 +64,7 @@ for offset in offsets:
 
         df['close_price_perc'] = df['close_price_perc'] * 100
 
-        threshold = 5 #originally 4
+        threshold = 4 #originally 4
 
         df['spike'] = (df['close_price_perc'] > threshold).fillna(False)
 
