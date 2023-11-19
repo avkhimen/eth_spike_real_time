@@ -8,3 +8,4 @@ venv/
 
 # Random files
 *.mp4
+env.sh
