@@ -10,65 +10,67 @@ import logging
 
 logging.getLogger().setLevel(logging.INFO)
 
-while True:
+if __name__ == '__main__':
 
-    time.sleep(20)
+    while True:
 
-    current_time = datetime.now()
-    logging.info(f'Processed {current_time}')
-    if (current_time.hour in [0,4,8,12,16,18,20]) and (current_time.minute == 42):
+        time.sleep(20)
 
-        logging.info('Checking prices...')
+        current_time = datetime.now()
+        logging.info(f'Processed {current_time}')
+        if (current_time.hour in [0,4,8,12,16,20]) and (current_time.minute == 0):
 
-        end = int(time.mktime(datetime.now().timetuple()))
+            logging.info('Checking prices...')
 
-        start = end - 1000 * 4 * 60 * 60
+            end = int(time.mktime(datetime.now().timetuple()))
 
-        ethusd_url = f'https://futures.kraken.com/api/charts/v1/spot/PI_ETHUSD/4h?from={start}&to={end}'
+            start = end - 1000 * 4 * 60 * 60
 
-        ethusd_candles = requests.get(ethusd_url).json()['candles']
+            ethusd_url = f'https://futures.kraken.com/api/charts/v1/spot/PI_ETHUSD/4h?from={start}&to={end}'
 
-        ethusd_close_prices = []
-        timestamps = []
-        for item in ethusd_candles:
-            timestamps.append(item['time'])
-            ethusd_close_prices.append(float(item['close']))
+            ethusd_candles = requests.get(ethusd_url).json()['candles']
 
-        btcusd_url = f'https://futures.kraken.com/api/charts/v1/spot/PI_XBTUSD/4h?from={start}&to={end}'
+            ethusd_close_prices = []
+            timestamps = []
+            for item in ethusd_candles:
+                timestamps.append(item['time'])
+                ethusd_close_prices.append(float(item['close']))
 
-        btcusd_candles = requests.get(btcusd_url).json()['candles']
+            btcusd_url = f'https://futures.kraken.com/api/charts/v1/spot/PI_XBTUSD/4h?from={start}&to={end}'
 
-        btcusd_close_prices = []
-        timestamps = []
-        for item in btcusd_candles:
-            timestamps.append(item['time'])
-            btcusd_close_prices.append(float(item['close']))
+            btcusd_candles = requests.get(btcusd_url).json()['candles']
 
-        close_prices = np.divide(np.array(ethusd_close_prices), np.array(btcusd_close_prices)).tolist()
+            btcusd_close_prices = []
+            timestamps = []
+            for item in btcusd_candles:
+                timestamps.append(item['time'])
+                btcusd_close_prices.append(float(item['close']))
 
-        with open('model.pickle', 'rb') as f:
-            model = pickle.load(f)
+            close_prices = np.divide(np.array(ethusd_close_prices), np.array(btcusd_close_prices)).tolist()
 
-        close_prices = np.array(close_prices)
+            with open('model.pickle', 'rb') as f:
+                model = pickle.load(f)
 
-        input_features = np.concatenate((close_prices[-90:], close_prices[-90:]/min(close_prices[-90:]), [min(close_prices[-90:])]), axis=0)
+            close_prices = np.array(close_prices)
 
-        pred = model.predict([input_features])[0]
+            input_features = np.concatenate((close_prices[-90:], close_prices[-90:]/min(close_prices[-90:]), [min(close_prices[-90:])]), axis=0)
 
-        print('Prediction is', pred)
+            pred = model.predict([input_features])[0]
 
-        if pred == 'False':
+            print('Prediction is', pred)
 
-            account_sid = os.environ['ACCOUNT_SID']
-            auth_token = os.environ['AUTH_TOKEN']
-            client = Client(account_sid, auth_token)
+            if pred == 'False':
 
-            message = client.messages.create(
-                from_=os.environ['TWILIO_PHONE_NUMBER'],
-                body='Eth should spike against BTC',
-                to='+17809321716'
-            )
+                account_sid = os.environ['ACCOUNT_SID']
+                auth_token = os.environ['AUTH_TOKEN']
+                client = Client(account_sid, auth_token)
 
-            # ts = int('1284101485')
+                message = client.messages.create(
+                    from_=os.environ['TWILIO_PHONE_NUMBER'],
+                    body='Eth should spike against BTC',
+                    to='+17809321716'
+                )
 
-            # print(datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
+                # ts = int('1284101485')
+
+                # print(datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))

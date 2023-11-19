@@ -2,12 +2,8 @@ FROM pytorch/pytorch
 
 COPY ./requirements.txt .
 
-COPY ./env.sh .
-
 RUN pip install -r ./requirements.txt
-
-RUN sh env.sh
 
 WORKDIR /home/jovyan/app
 
-#CMD ["python", "process_real_time.py"]
+CMD ["python", "process_real_time.py"]
