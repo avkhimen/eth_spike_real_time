@@ -61,9 +61,10 @@ if __name__ == '__main__':
 
             if pred == 'False':
 
+                api_key = os.environ['API_KEY']
+                api_secret = os.environ['API_SECRET']
                 account_sid = os.environ['ACCOUNT_SID']
-                auth_token = os.environ['AUTH_TOKEN']
-                client = Client(account_sid, auth_token)
+                client = Client(api_key, api_secret, account_sid)
 
                 message = client.messages.create(
                     from_=os.environ['TWILIO_PHONE_NUMBER'],
