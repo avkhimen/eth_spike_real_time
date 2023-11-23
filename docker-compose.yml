@@ -12,5 +12,6 @@ services:
     #command: tail -F anything
     environment:
       - ACCOUNT_SID
-      - AUTH_TOKEN
+      - API_KEY
+      - API_SECRET
       - TWILIO_PHONE_NUMBER
